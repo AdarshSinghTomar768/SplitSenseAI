@@ -179,6 +179,22 @@ class DescriptionParser:
                     assignments[idx] = list(people)
                     assumptions.append(f"'{item.name}' not clearly assigned — assumed shared by all")
 
+        food_words_in_desc = re.findall(r'\b([a-z]{4,})\b', description.lower())
+        bill_item_names = set()
+        for item in items:
+            for alias in _get_aliases(item.name):
+                bill_item_names.add(alias.lower())
+
+        desc_food_candidates = set()
+        for word in food_words_in_desc:
+            if word not in NON_PERSON_WORDS and word not in bill_item_names and len(word) > 3:
+                desc_food_candidates.add(word)
+
+        if desc_food_candidates:
+            flags.append(
+                f"Description mentions food/drink items not found on the bill: {', '.join(sorted(desc_food_candidates)[:3])} — cannot verify these items"
+            )
+
         return {
             "people": people,
             "assignments": assignments,
