@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fair Split — Bill Splitting Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1d1d1f;
+        }
+        header p {
+            color: #86868b;
+            margin-top: 0.5rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+        }
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #1d1d1f;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #0071e3;
+            box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+        }
+        .upload-area {
+            border: 2px dashed #d2d2d7;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+        .upload-area:hover {
+            border-color: #0071e3;
+            background: #f0f7ff;
+        }
+        .upload-area.has-image {
+            border-color: #34c759;
+            background: #f0fdf4;
+        }
+        .upload-area p {
+            color: #86868b;
+            font-size: 0.9rem;
+        }
+        .upload-area .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        #image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+        }
+        .btn-primary:hover { background: #0077ed; }
+        .btn-primary:disabled {
+            background: #d2d2d7;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f5f5f7;
+            color: #1d1d1f;
+            border: 1px solid #d2d2d7;
+        }
+        .btn-secondary:hover { background: #e8e8ed; }
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .error {
+            background: #fff2f2;
+            border: 1px solid #ff3b30;
+            border-radius: 10px;
+            padding: 1rem;
+            color: #ff3b30;
+            margin-top: 1rem;
+            display: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #d2d2d7;
+            border-top-color: #0071e3;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            text-align: left;
+            padding: 0.75rem 0.5rem;
+            border-bottom: 2px solid #d2d2d7;
+            font-weight: 600;
+            color: #86868b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tr:last-child td { border-bottom: none; }
+        .total-row td {
+            font-weight: 700;
+            border-top: 2px solid #d2d2d7;
+        }
+        .settle-up {
+            background: #f0f7ff;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .settle-up h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #0071e3;
+        }
+        .settle-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+        }
+        .flags {
+            background: #fff8e1;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .flags h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #f57c00;
+        }
+        .flag-item {
+            padding: 0.3rem 0;
+            font-size: 0.85rem;
+            color: #795548;
+        }
+        .assumptions {
+            background: #f3e5f5;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .assumptions h3 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #7b1fa2;
+        }
+        .assumption-item {
+            padding: 0.3rem 0;
+            font-size: 0.85rem;
+            color: #6a1b9a;
+        }
+        .reconciliation {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        .reconciliation .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .badge-success { background: #e8f5e9; color: #2e7d32; }
+        .badge-warning { background: #fff3e0; color: #e65100; }
+        #result { display: none; }
+        .sample-btn {
+            display: inline-block;
+            margin: 0.3rem 0.3rem 0 0;
+            padding: 0.4rem 0.8rem;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: white;
+            color: #1d1d1f;
+            transition: all 0.2s;
+        }
+        .sample-btn:hover { background: #f0f7ff; border-color: #0071e3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fair Split</h1>
+            <p>Upload a receipt, describe who had what, get a fair breakdown</p>
+        </header>
+
+        <div class="card">
+            <h2>Receipt Image</h2>
+            <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+                <div class="icon">📸</div>
+                <p>Click to upload a receipt image</p>
+                <p style="font-size:0.75rem; margin-top:0.5rem;">JPG, PNG — max 10MB</p>
+            </div>
+            <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this)">
+            <img id="image-preview" alt="Receipt preview">
+        </div>
+
+        <div class="card">
+            <h2>Who had what?</h2>
+            <label for="description">Describe who ate what and who paid</label>
+            <textarea id="description" rows="4" placeholder="e.g. Ravi had the cappuccino and the sandwich. Neha had the pasta and the lime soda. Sameer had the brownie. Sameer paid."></textarea>
+
+            <div style="margin-top:1rem;">
+                <p style="font-size:0.8rem; color:#86868b; margin-bottom:0.5rem;">Try a sample:</p>
+                <button class="sample-btn" onclick="loadSample(1)">R1 — Brew & Bite</button>
+                <button class="sample-btn" onclick="loadSample(2)">R2 — Tamarind Kitchen</button>
+                <button class="sample-btn" onclick="loadSample(3)">R3 — The Daily Grind</button>
+                <button class="sample-btn" onclick="loadSample(4)">R4 — Spice Route</button>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" id="split-btn" onclick="splitBill()" disabled>Split Bill</button>
+            </div>
+
+            <div class="error" id="error-msg"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing receipt...</p>
+            </div>
+        </div>
+
+        <div id="result">
+            <div class="card">
+                <h2>Breakdown</h2>
+                <div id="reconciliation"></div>
+                <div style="overflow-x:auto;">
+                    <table id="result-table">
+                        <thead>
+                            <tr>
+                                <th>Person</th>
+                                <th>Items</th>
+                                <th>Subtotal</th>
+                                <th>Tax</th>
+                                <th>Service</th>
+                                <th>Discount</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-body"></tbody>
+                    </table>
+                </div>
+                <div class="settle-up" id="settle-up"></div>
+            </div>
+            <div class="card" id="flags-card" style="display:none">
+                <div class="flags" id="flags-section"></div>
+                <div class="assumptions" id="assumptions-section"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let base64Data = '';
+
+        const samples = {
+            1: {
+                description: "Three of us — Ravi, Neha, Sameer. Ravi had the cappuccino and the sandwich. Neha had the pasta and the lime soda. Sameer had the brownie. Sameer paid.",
+                items: [
+                    {name: "Cappuccino", qty: 1, amount: 180},
+                    {name: "Grilled Chicken Sandwich", qty: 1, amount: 260},
+                    {name: "Penne Arrabiata", qty: 1, amount: 320},
+                    {name: "Fresh Lime Soda", qty: 1, amount: 120},
+                    {name: "Brownie", qty: 1, amount: 160}
+                ],
+                subtotal: 1040, service_charge: 52, discount: 0, tax: 54.60, grand_total: 1147
+            },
+            2: {
+                description: "Four of us: Aman, Priya, Karan, Sara. The Gulab Jamun was shared just by Priya and Karan. Everything else was common to all four. Priya paid.",
+                items: [
+                    {name: "Paneer Butter Masala", qty: 1, amount: 320},
+                    {name: "Dal Makhani", qty: 1, amount: 260},
+                    {name: "Butter Naan", qty: 4, amount: 240},
+                    {name: "Jeera Rice", qty: 1, amount: 180},
+                    {name: "Gulab Jamun", qty: 2, amount: 120},
+                    {name: "Masala Papad", qty: 2, amount: 100}
+                ],
+                subtotal: 1220, service_charge: 61, discount: 0, tax: 64.05, grand_total: 1345
+            },
+            3: {
+                description: "Ishaan, Meera, Rohit. Pizza, pasta and garlic bread shared equally by all three. The two beers were Ishaan and Rohit only. The mojito was Meera's. Rohit paid.",
+                items: [
+                    {name: "Margherita Pizza", qty: 1, amount: 380},
+                    {name: "Arrabiata Pasta", qty: 1, amount: 340},
+                    {name: "Garlic Bread", qty: 1, amount: 160},
+                    {name: "Craft Beer", qty: 2, amount: 500},
+                    {name: "Virgin Mojito", qty: 1, amount: 180}
+                ],
+                subtotal: 1560, service_charge: 78, discount: 0, tax: 81.90, grand_total: 1720
+            },
+            4: {
+                description: "Dev and Nikhil each had a chicken biryani. Anjali had the veg biryani. Farah had the rogan josh. The raita and soft drinks were common to all four. We used a 15% off coupon. Anjali paid.",
+                items: [
+                    {name: "Chicken Biryani", qty: 2, amount: 560},
+                    {name: "Veg Biryani", qty: 1, amount: 240},
+                    {name: "Mutton Rogan Josh", qty: 1, amount: 420},
+                    {name: "Raita", qty: 2, amount: 120},
+                    {name: "Soft Drinks", qty: 3, amount: 180}
+                ],
+                subtotal: 1520, service_charge: 76, discount: 228, tax: 68.40, grand_total: 1436
+            }
+        };
+
+        function handleFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                showError("File too large. Max 10MB.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                base64Data = dataUrl.split(',')[1];
+                document.getElementById('image-preview').src = dataUrl;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('upload-area').classList.add('has-image');
+                document.getElementById('upload-area').querySelector('p').textContent = file.name;
+                updateSplitBtn();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadSample(num) {
+            const s = samples[num];
+            document.getElementById('description').value = s.description;
+
+            // Create a synthetic receipt image data for the sample
+            base64Data = null; // Will use manual mode
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('upload-area').classList.remove('has-image');
+            document.getElementById('upload-area').querySelector('p').textContent = 'Click to upload a receipt image';
+
+            updateSplitBtn();
+
+            // Auto-split with manual data
+            splitBillManual(s);
+        }
+
+        function updateSplitBtn() {
+            const desc = document.getElementById('description').value.trim();
+            document.getElementById('split-btn').disabled = !desc;
+        }
+
+        document.getElementById('description').addEventListener('input', updateSplitBtn);
+
+        function showError(msg) {
+            const el = document.getElementById('error-msg');
+            el.textContent = msg;
+            el.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function hideError() {
+            document.getElementById('error-msg').style.display = 'none';
+        }
+
+        async function splitBill() {
+            const desc = document.getElementById('description').value.trim();
+            if (!desc) { showError("Please enter a description."); return; }
+            if (!base64Data) { showError("Please upload a receipt image."); return; }
+
+            hideError();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            try {
+                const resp = await fetch('/api/split', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receipt_base64: base64Data,
+                        description: desc
+                    })
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    showError(data.detail || 'Error splitting bill');
+                    return;
+                }
+                displayResult(data);
+            } catch (e) {
+                showError('Network error: ' + e.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        async function splitBillManual(sample) {
+            hideError();
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            try {
+                const resp = await fetch('/api/split-manual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receipt: sample,
+                        description: sample.description
+                    })
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    showError(data.detail || 'Error splitting bill');
+                    return;
+                }
+                displayResult(data);
+            } catch (e) {
+                showError('Network error: ' + e.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResult(data) {
+            const tbody = document.getElementById('result-body');
+            tbody.innerHTML = '';
+
+            let grandTotal = 0;
+            data.per_person.forEach(p => {
+                grandTotal += p.total;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p.name}</strong></td>
+                    <td>${p.items.join(', ')}</td>
+                    <td>₹${p.subtotal}</td>
+                    <td>₹${p.tax_share}</td>
+                    <td>₹${p.service_share}</td>
+                    <td>${p.discount_share < 0 ? '-' : ''}₹${Math.abs(p.discount_share)}</td>
+                    <td><strong>₹${p.total}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const totalTr = document.createElement('tr');
+            totalTr.className = 'total-row';
+            totalTr.innerHTML = `
+                <td colspan="2">Grand Total</td>
+                <td></td><td></td><td></td><td></td>
+                <td><strong>₹${data.grand_total}</strong></td>
+            `;
+            tbody.appendChild(totalTr);
+
+            // Reconciliation
+            const recon = data.reconciliation;
+            const reconEl = document.getElementById('reconciliation');
+            reconEl.innerHTML = `
+                <div class="reconciliation">
+                    <span>Sum of splits: ₹${recon.sum_of_person_totals}</span>
+                    <span>|</span>
+                    <span>Bill total: ₹${data.grand_total}</span>
+                    <span class="badge ${recon.matches_bill ? 'badge-success' : 'badge-warning'}">
+                        ${recon.matches_bill ? '✓ Reconciled' : '⚠ Mismatch'}
+                    </span>
+                    <span>|</span>
+                    <span>Paid by: <strong>${data.paid_by || 'Unknown'}</strong></span>
+                </div>
+            `;
+
+            // Settle up
+            const settleEl = document.getElementById('settle-up');
+            if (data.settle_up && data.settle_up.length > 0) {
+                let html = '<h3>Settle Up</h3>';
+                data.settle_up.forEach(s => {
+                    html += `<div class="settle-item"><span>${s.from_name} owes ${s.to_name}</span><strong>₹${s.amount}</strong></div>`;
+                });
+                settleEl.innerHTML = html;
+                settleEl.style.display = 'block';
+            } else {
+                settleEl.style.display = 'none';
+            }
+
+            // Flags & assumptions
+            const flagsCard = document.getElementById('flags-card');
+            const flagsSection = document.getElementById('flags-section');
+            const assumptionsSection = document.getElementById('assumptions-section');
+
+            if (data.flags && data.flags.length > 0) {
+                let html = '<h3>Flags</h3>';
+                data.flags.forEach(f => { html += `<div class="flag-item">⚠ ${f}</div>`; });
+                flagsSection.innerHTML = html;
+                flagsSection.style.display = 'block';
+            } else {
+                flagsSection.style.display = 'none';
+            }
+
+            if (data.assumptions && data.assumptions.length > 0) {
+                let html = '<h3>Assumptions</h3>';
+                data.assumptions.forEach(a => { html += `<div class="assumption-item">ℹ ${a}</div>`; });
+                assumptionsSection.innerHTML = html;
+                assumptionsSection.style.display = 'block';
+            } else {
+                assumptionsSection.style.display = 'none';
+            }
+
+            flagsCard.style.display = (data.flags?.length > 0 || data.assumptions?.length > 0) ? 'block' : 'none';
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
