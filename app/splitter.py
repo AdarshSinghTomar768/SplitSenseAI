@@ -39,7 +39,7 @@ class BillSplitter:
         person_items: Dict[str, List[str]] = {p: [] for p in people}
 
         for idx, item in enumerate(effective_items):
-            item_total = item.amount
+            item_total = item.amount * item.qty
 
             if idx in personal:
                 # Single person owns this entire item
@@ -103,16 +103,16 @@ class BillSplitter:
         for person in people:
             proportion = person_subtotals[person] / total_pre_tax if total_pre_tax > 0 else 1 / len(people)
 
-            tax_share = round(tax_total * proportion)
-            service_share = round(service_total * proportion)
-            discount_share = round(discount_total * proportion)
+            tax_share = round(tax_total * proportion, 2)
+            service_share = round(service_total * proportion, 2)
+            discount_share = round(discount_total * proportion, 2)
 
-            total = round(person_subtotals[person] + tax_share + service_share - discount_share)
+            total = round(person_subtotals[person] + tax_share + service_share - discount_share, 2)
 
             person_breakdowns.append(PersonBreakdown(
                 name=person,
                 items=person_items[person],
-                subtotal=round(person_subtotals[person]),
+                subtotal=round(person_subtotals[person], 2),
                 tax_share=tax_share,
                 service_share=service_share,
                 discount_share=-discount_share if discount_share > 0 else discount_share,
@@ -120,13 +120,13 @@ class BillSplitter:
             ))
             sum_of_totals += total
 
-        grand_total = round(receipt.grand_total)
-        matches_bill = abs(sum_of_totals - grand_total) <= 2
+        grand_total = round(receipt.grand_total, 2)
+        matches_bill = abs(sum_of_totals - grand_total) <= 0.05
 
         if not matches_bill:
             diff = grand_total - sum_of_totals
             flags.append(
-                f"Split total (₹{round(sum_of_totals)}) doesn't match bill total (₹{grand_total}) — ₹{abs(round(diff))} difference"
+                f"Split total (€{round(sum_of_totals, 2)}) doesn't match bill total (€{grand_total}) — €{abs(round(diff, 2))} difference"
             )
 
         settle_up = self._compute_settle_up(person_breakdowns, paid_by, people)
@@ -135,7 +135,7 @@ class BillSplitter:
             per_person=person_breakdowns,
             grand_total=grand_total,
             reconciliation=Reconciliation(
-                sum_of_person_totals=round(sum_of_totals),
+                sum_of_person_totals=round(sum_of_totals, 2),
                 matches_bill=matches_bill,
             ),
             paid_by=paid_by,
