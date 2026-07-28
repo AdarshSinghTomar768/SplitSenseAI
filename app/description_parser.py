@@ -48,6 +48,17 @@ ITEM_ALIASES = {
     'mutton rogan josh': ['rogan josh', 'mutton rogan'],
     'raita': ['raita'],
     'soft drinks': ['drinks', 'soft drinks'],
+    'tomate de cacho': ['tomate', 'tomates', 'tomato', 'tomatoes'],
+    'abacaxi': ['abacaxi', 'pineapple'],
+    'batata cons. roxa': ['batata', 'potatoes', 'potato'],
+    'ameixa rain. cla. emb.': ['ameixa', 'plums', 'plum'],
+    'mozzarella sort.': ['mozzarella'],
+    'queijo cabra': ['queijo cabra', 'goat cheese', 'cheese'],
+    'queijo feta': ['queijo feta', 'feta'],
+    'azeite gallo': ['azeite', 'olive oil', 'olive'],
+    'cornichons': ['cornichons', 'pickles'],
+    'branco reg ribatejo': ['branco', 'wine', 'ribatejo'],
+    'agua de nascente': ['agua', 'water'],
 }
 
 

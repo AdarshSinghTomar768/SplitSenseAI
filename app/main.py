@@ -46,6 +46,12 @@ def parse_description_text(description: str) -> dict:
         'owed', 'dish', 'dishes', 'meal', 'meals', 'portion',
         'included', 'excluding', 'except', 'besides', 'also',
         'too', 'with', 'without', 'between', 'among', 'amongst',
+        'water', 'wine', 'tomatoes', 'potatoes', 'plums',
+        'cheese', 'cornichons', 'euros', 'goat', 'feta',
+        'mozzarella', 'olive', 'oil', 'pineapple', 'bread',
+        'rice', 'salad', 'soup', 'chicken', 'beef', 'fish',
+        'pasta', 'pizza', 'beer', 'cola', 'juice', 'coffee',
+        'tea', 'milk', 'eggs', 'butter', 'sugar', 'salt',
     }
 
     name_pattern = r'\b([A-Z][a-z]+)\b'
