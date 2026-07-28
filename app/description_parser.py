@@ -185,9 +185,10 @@ class DescriptionParser:
             for alias in _get_aliases(item.name):
                 bill_item_names.add(alias.lower())
 
+        people_names = set(p.lower() for p in people)
         desc_food_candidates = set()
         for word in food_words_in_desc:
-            if word not in NON_PERSON_WORDS and word not in bill_item_names and len(word) > 3:
+            if word not in NON_PERSON_WORDS and word not in bill_item_names and word not in people_names and len(word) > 3:
                 desc_food_candidates.add(word)
 
         if desc_food_candidates:
